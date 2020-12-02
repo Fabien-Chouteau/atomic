@@ -1,2 +1,2 @@
 # atomic
-Standalone binding to GCC atomic built-ins
+Standalone Ada/SPARK bindings to GCC atomic built-ins
