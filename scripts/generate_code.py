@@ -2,13 +2,17 @@
 
 import os
 
-def generate_atomic_bindings_spec(filename, package, bytes):
+def generate_atomic_bindings_spec(filename, package, bytes, signed):
     args = {'package': package,
             'bytes': bytes}
     with open(filename, "w") as f:
+        f.write("generic\n")
+        if signed:
+            f.write("   type T is range <>;")
+        else:
+            f.write("   type T is mod <>;")
+
         f.write("""
-generic
-   type T is mod <>;
 package Atomic.{package}
 with Preelaborate, Spark_Mode => On
 is
@@ -76,7 +80,9 @@ is
                   Val   : T;
                   Order : Mem_Order := Seq_Cst)
      with Post => Value (This) = Value (This)'Old - Val;
-
+""".format(**args))
+        if not signed:
+            f.write("""
    procedure Op_And (This  : aliased in out Instance;
                      Val   : T;
                      Order : Mem_Order := Seq_Cst)
@@ -96,7 +102,8 @@ is
                    Val   : T;
                    Order : Mem_Order := Seq_Cst)
      with Post => Value (This) = not (Value (This)'Old and Val);
-
+""")
+        f.write("""
    procedure Add_Fetch (This  : aliased in out Instance;
                         Val   : T;
                         Result : out T;
@@ -110,7 +117,9 @@ is
                         Order : Mem_Order := Seq_Cst)
      with Post => Result = (Value (This)'Old - Val)
      and then Value (This) = Result;
-
+""")
+        if not signed:
+            f.write("""
    procedure And_Fetch (This  : aliased in out Instance;
                        Val   : T;
                         Result : out T;
@@ -138,7 +147,8 @@ is
                         Order : Mem_Order := Seq_Cst)
      with Post => Result = not (Value (This)'Old and Val)
      and then Value (This) = Result;
-
+""")
+        f.write("""
    procedure Fetch_Add (This  : aliased in out Instance;
                         Val   : T;
                         Result : out T;
@@ -152,7 +162,9 @@ is
                         Order : Mem_Order := Seq_Cst)
      with Post => Result = Value (This)'Old
      and Value (This) = (Value (This)'Old - Val);
-
+""")
+        if not signed:
+            f.write("""
    procedure Fetch_And (This  : aliased in out Instance;
                         Val   : T;
                         Result : out T;
@@ -180,7 +192,8 @@ is
                         Order : Mem_Order := Seq_Cst)
      with Post => Result = Value (This)'Old
      and Value (This) = not (Value (This)'Old and Val);
-
+""")
+        f.write("""
    -- NOT SPARK compatible --
 
    function Exchange (This  : aliased in out Instance;
@@ -219,7 +232,9 @@ is
      with SPARK_Mode => Off,
           Post => Sub_Fetch'Result = (Value (This)'Old - Val)
      and then Value (This) = Sub_Fetch'Result;
-
+""")
+        if not signed:
+            f.write("""
    function And_Fetch (This  : aliased in out Instance;
                        Val   : T;
                        Order : Mem_Order := Seq_Cst)
@@ -251,7 +266,8 @@ is
      with SPARK_Mode => Off,
           Post => NAND_Fetch'Result = not (Value (This)'Old and Val)
      and then Value (This) = NAND_Fetch'Result;
-
+""")
+        f.write("""
    function Fetch_Add (This  : aliased in out Instance;
                        Val   : T;
                        Order : Mem_Order := Seq_Cst)
@@ -263,7 +279,9 @@ is
                        Order : Mem_Order := Seq_Cst)
                        return T
      with SPARK_Mode => Off;
-
+""")
+        if not signed:
+            f.write("""
    function Fetch_And (This  : aliased in out Instance;
                        Val   : T;
                        Order : Mem_Order := Seq_Cst)
@@ -287,7 +305,8 @@ is
                         Order : Mem_Order := Seq_Cst)
                         return T
      with SPARK_Mode => Off;
-
+""")
+        f.write("""
 private
 
    type Instance is new T;
@@ -313,28 +332,32 @@ private
    pragma Inline (Compare_Exchange);
    pragma Inline (Add);
    pragma Inline (Sub);
+   pragma Inline (Add_Fetch);
+   pragma Inline (Sub_Fetch);
+   pragma Inline (Fetch_Add);
+   pragma Inline (Fetch_Sub);
+""")
+        if not signed:
+            f.write("""
    pragma Inline (Op_And);
    pragma Inline (Op_XOR);
    pragma Inline (Op_OR);
    pragma Inline (NAND);
-   pragma Inline (Add_Fetch);
-   pragma Inline (Sub_Fetch);
    pragma Inline (And_Fetch);
    pragma Inline (XOR_Fetch);
    pragma Inline (OR_Fetch);
    pragma Inline (NAND_Fetch);
-   pragma Inline (Fetch_Add);
-   pragma Inline (Fetch_Sub);
    pragma Inline (Fetch_And);
    pragma Inline (Fetch_XOR);
    pragma Inline (Fetch_OR);
    pragma Inline (Fetch_NAND);
-
+""")
+        f.write("""
 end Atomic.{package};
 """.format(**args))
 
 
-def generate_atomic_bindings_body(filename, package, bytes):
+def generate_atomic_bindings_body(filename, package, bytes, signed):
     args = {'package': package,
             'bytes': bytes}
     with open(filename, "w") as f:
@@ -418,7 +441,9 @@ is
    begin
       Unused := Intrinsic (This'Address, Val, Order'Enum_Rep);
    end Sub;
-
+""".format(**args))
+        if not signed:
+            f.write("""
    ------------
    -- Op_And --
    ------------
@@ -491,7 +516,8 @@ is
    begin
       Unused := Intrinsic (This'Address, Val, Order'Enum_Rep);
    end NAND;
-
+""")
+        f.write("""
    -- SPARK compatible --
 
    --------------
@@ -577,7 +603,9 @@ is
    begin
       Result := Intrinsic (This'Address, Val, Order'Enum_Rep);
    end Sub_Fetch;
-
+""")
+        if not signed:
+            f.write("""
    ---------------
    -- And_Fetch --
    ---------------
@@ -649,7 +677,8 @@ is
    begin
       Result := Intrinsic (This'Address, Val, Order'Enum_Rep);
    end NAND_Fetch;
-
+""")
+        f.write("""
    ---------------
    -- Fetch_Add --
    ---------------
@@ -685,7 +714,9 @@ is
    begin
       Result := Intrinsic (This'Address, Val, Order'Enum_Rep);
    end Fetch_Sub;
-
+""")
+        if not signed:
+            f.write("""
    ---------------
    -- Fetch_And --
    ---------------
@@ -758,8 +789,9 @@ is
    begin
       Result := Intrinsic (This'Address, Val, Order'Enum_Rep);
    end Fetch_NAND;
-
-      -- NOT SPARK Compatible --
+""")
+        f.write("""
+   -- NOT SPARK Compatible --
 
    --------------
    -- Exchange --
@@ -844,7 +876,9 @@ is
    begin
       return Intrinsic (This'Address, Val, Order'Enum_Rep);
    end Sub_Fetch;
-
+""")
+        if not signed:
+            f.write("""
    ---------------
    -- And_Fetch --
    ---------------
@@ -913,7 +947,8 @@ is
    begin
       return Intrinsic (This'Address, Val, Order'Enum_Rep);
    end NAND_Fetch;
-
+""")
+        f.write("""
    ---------------
    -- Fetch_Add --
    ---------------
@@ -947,7 +982,9 @@ is
    begin
       return Intrinsic (This'Address, Val, Order'Enum_Rep);
    end Fetch_Sub;
-
+""")
+        if not signed:
+            f.write("""
    ---------------
    -- Fetch_And --
    ---------------
@@ -1016,18 +1053,28 @@ is
    begin
       return Intrinsic (This'Address, Val, Order'Enum_Rep);
    end Fetch_NAND;
-
+""")
+        f.write("""
 end Atomic.{package};
 """.format(**args))
 
 
 src_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'src')
 
-generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic8.ads'), 'Generic8', '1')
-generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic8.adb'), 'Generic8', '1')
-generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic16.ads'), 'Generic16', '2')
-generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic16.adb'), 'Generic16', '2')
-generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic32.ads'), 'Generic32', '4')
-generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic32.adb'), 'Generic32', '4')
-generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic64.ads'), 'Generic64', '8')
-generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic64.adb'), 'Generic64', '8')
+generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic8.ads'), 'Generic8', '1', signed=False)
+generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic8.adb'), 'Generic8', '1', signed=False)
+generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic16.ads'), 'Generic16', '2', signed=False)
+generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic16.adb'), 'Generic16', '2', signed=False)
+generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic32.ads'), 'Generic32', '4', signed=False)
+generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic32.adb'), 'Generic32', '4', signed=False)
+generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic64.ads'), 'Generic64', '8', signed=False)
+generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic64.adb'), 'Generic64', '8', signed=False)
+
+generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic_signed8.ads'), 'Generic_Signed8', '1', signed=True)
+generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic_signed8.adb'), 'Generic_Signed8', '1', signed=True)
+generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic_signed16.ads'), 'Generic_Signed16', '2', signed=True)
+generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic_signed16.adb'), 'Generic_Signed16', '2', signed=True)
+generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic_signed32.ads'), 'Generic_Signed32', '4', signed=True)
+generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic_signed32.adb'), 'Generic_Signed32', '4', signed=True)
+generate_atomic_bindings_spec(os.path.join(src_dir, 'atomic-generic_signed64.ads'), 'Generic_Signed64', '8', signed=True)
+generate_atomic_bindings_body(os.path.join(src_dir, 'atomic-generic_signed64.adb'), 'Generic_Signed64', '8', signed=True)

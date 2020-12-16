@@ -1,6 +1,6 @@
 name = "atomic"
 description = "Standalone Ada/SPARK bindings to GCC atomic built-ins"
-version = "0.1.0"
+version = "0.2.0"
 
 licenses = ["MIT"]
 authors = ["Fabien Chouteau"]
