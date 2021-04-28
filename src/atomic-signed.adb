@@ -50,7 +50,7 @@ is
       procedure Intrinsic32 (Ptr : System.Address; Val : T; Model : Integer);
       pragma Import (Intrinsic, Intrinsic32, "__atomic_store_4");
       procedure Intrinsic64 (Ptr : System.Address; Val : T; Model : Integer);
-      pragma Import (Intrinsic, Intrinsic64, "__atomic_store_4");
+      pragma Import (Intrinsic, Intrinsic64, "__atomic_store_8");
       pragma Warnings (On);
    begin
       case T'Object_Size is
