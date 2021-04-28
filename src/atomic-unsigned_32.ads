@@ -1,4 +1,4 @@
 with Interfaces;
-with Atomic.Generic32;
+with Atomic.Unsigned;
 
-package Atomic.Unsigned_32 is new Atomic.Generic32 (Interfaces.Unsigned_32);
+package Atomic.Unsigned_32 is new Atomic.Unsigned (Interfaces.Unsigned_32);

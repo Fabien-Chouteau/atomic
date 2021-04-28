@@ -1,13 +1,18 @@
 generic
    type T is range <>;
-package Atomic.Generic_Signed8
-with Preelaborate, Spark_Mode => On
+package Atomic.Signed
+with Preelaborate, Spark_Mode => On,
+     Abstract_State => null
 is
    --  Based on GCC atomic built-ins. See:
    --  https://gcc.gnu.org/onlinedocs/gcc/_005f_005fatomic-Builtins.html
    --
    --  The specification is exactly the same for all sizes of data (8, 16, 32,
    --  64).
+
+   pragma Compile_Time_Error
+     (T'Object_Size not in 8 | 16 | 32 | 64,
+      "Atomic builtins not available for objects of this size");
 
    type Instance is limited private;
    --  This type is limited and private, it can only be manipulated using the
@@ -177,4 +182,4 @@ private
    pragma Inline (Fetch_Add);
    pragma Inline (Fetch_Sub);
 
-end Atomic.Generic_Signed8;
+end Atomic.Signed;
