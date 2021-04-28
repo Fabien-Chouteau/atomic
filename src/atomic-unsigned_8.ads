@@ -1,4 +1,4 @@
 with Interfaces;
-with Atomic.Generic8;
+with Atomic.Unsigned;
 
-package Atomic.Unsigned_8 is new Atomic.Generic8 (Interfaces.Unsigned_8);
+package Atomic.Unsigned_8 is new Atomic.Unsigned (Interfaces.Unsigned_8);
