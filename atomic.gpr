@@ -1,9 +1,17 @@
+with "config/atomic_config.gpr";
+
 project Atomic is
 
    for Library_Name use "Atomic";
    for Library_Version use "0.0.0";
 
-   for Source_Dirs use ("src");
+   case Atomic_Config.Backend is
+      when "Intrinsic" =>
+         for Source_Dirs use ("src", "src/intrinsic");
+      when "armv6m" =>
+         for Source_Dirs use ("src", "src/critical_section", "src/armv6m");
+   end case;
+
    for Object_Dir use "obj";
    for Create_Missing_Dirs use "True";
    for Library_Dir use "lib";
@@ -14,13 +22,13 @@ project Atomic is
    for Library_Kind use Library_Type;
 
    type Enabled_Kind is ("enabled", "disabled");
-   Compile_Checks : Enabled_Kind := External ("ATOMIC_COMPILE_CHECKS", "enabled");
-   Runtime_Checks : Enabled_Kind := External ("ATOMIC_RUNTIME_CHECKS", "enabled");
-   Style_Checks : Enabled_Kind := External ("ATOMIC_STYLE_CHECKS", "enabled");
-   Contracts_Checks : Enabled_Kind := External ("ATOMIC_CONTRACTS", "enabled");
+   Compile_Checks : Enabled_Kind := External ("ATOMIC_COMPILE_CHECKS", "disabled");
+   Runtime_Checks : Enabled_Kind := External ("ATOMIC_RUNTIME_CHECKS", "disabled");
+   Style_Checks : Enabled_Kind := External ("ATOMIC_STYLE_CHECKS", "disabled");
+   Contracts_Checks : Enabled_Kind := External ("ATOMIC_CONTRACTS", "disabled");
 
    type Build_Kind is ("debug", "optimize");
-   Build_Mode : Build_Kind := External ("ATOMIC_BUILD_MODE", "debug");
+   Build_Mode : Build_Kind := External ("ATOMIC_BUILD_MODE", "optimize");
 
    Compile_Checks_Switches := ();
    case Compile_Checks is
@@ -38,7 +46,7 @@ project Atomic is
       when "enabled" => null;
       when others =>
          Runtime_Checks_Switches :=
-           ("-gnatp"); -- Supress checks
+           ("-gnatp"); -- Suppress checks
    end case;
 
    Style_Checks_Switches := ();

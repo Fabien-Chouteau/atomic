@@ -8,3 +8,6 @@ maintainers = ["Fabien Chouteau <chouteau@adacore.com>"]
 maintainers-logins = ["Fabien-Chouteau"]
 website = "https://github.com/Fabien-Chouteau/atomic"
 tags = ["atomic", "spark", "embedded", "nostd"]
+
+[configuration.variables]
+Backend = {type = "Enum",  values = ["Intrinsic", "armv6m"], default = "Intrinsic"}
