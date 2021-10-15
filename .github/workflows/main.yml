@@ -18,3 +18,4 @@ jobs:
           toolchain: gprbuild${{ matrix.gprbuild_version }} gnat_native${{ matrix.gnat_version }} --disable-assistant
       - run: alr build
       - run: cd tests && alr build
+      - run: cd tests && alr run
