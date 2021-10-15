@@ -23,9 +23,7 @@ project Atomic is
 
    type Enabled_Kind is ("enabled", "disabled");
    Compile_Checks : Enabled_Kind := External ("ATOMIC_COMPILE_CHECKS", "disabled");
-   Runtime_Checks : Enabled_Kind := External ("ATOMIC_RUNTIME_CHECKS", "disabled");
    Style_Checks : Enabled_Kind := External ("ATOMIC_STYLE_CHECKS", "disabled");
-   Contracts_Checks : Enabled_Kind := External ("ATOMIC_CONTRACTS", "disabled");
 
    type Build_Kind is ("debug", "optimize");
    Build_Mode : Build_Kind := External ("ATOMIC_BUILD_MODE", "optimize");
@@ -41,13 +39,7 @@ project Atomic is
       when others => null;
    end case;
 
-   Runtime_Checks_Switches := ();
-   case Runtime_Checks is
-      when "enabled" => null;
-      when others =>
-         Runtime_Checks_Switches :=
-           ("-gnatp"); -- Suppress checks
-   end case;
+   Runtime_Checks_Switches := ("-gnatp"); -- Suppress checks
 
    Style_Checks_Switches := ();
    case Style_Checks is
@@ -61,12 +53,6 @@ project Atomic is
    end case;
 
    Contracts_Switches := ();
-   case Contracts_Checks is
-      when "enabled" => null;
-         Contracts_Switches :=
-           ("-gnata"); --  Enable assertions and contracts
-      when others =>
-   end case;
 
    Build_Switches := ();
    case Build_Mode is

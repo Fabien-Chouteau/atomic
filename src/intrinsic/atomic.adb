@@ -1,3 +1,8 @@
+--  Disable checks and assertions as the contracts are not safe for concurrent
+--  execution. They are only here for SPARK proof.
+pragma Suppress (All_Checks);
+pragma Assertion_Policy (Ignore);
+
 with System;
 
 package body Atomic is

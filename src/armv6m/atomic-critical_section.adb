@@ -1,3 +1,8 @@
+--  Disable checks and assertions as the contracts are not safe for concurrent
+--  execution. They are only here for SPARK proof.
+pragma Suppress (All_Checks);
+pragma Assertion_Policy (Ignore);
+
 with System.Machine_Code; use System.Machine_Code;
 
 package body Atomic.Critical_Section is
