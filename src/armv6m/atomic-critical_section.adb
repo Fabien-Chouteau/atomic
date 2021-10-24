@@ -30,10 +30,10 @@ package body Atomic.Critical_Section is
       System.Machine_Code.Asm
         (Template =>
            "dsb" & NL &       -- Ensure completion of memory accesses
-           "mrs %0, PRIMASK", -- restore PRIMASK
+           "msr PRIMASK, %0", -- restore PRIMASK
          Outputs  => No_Output_Operands,
          Inputs   => Interrupt_State'Asm_Input ("r", State),
-         Clobber  => "r1",
+         Clobber  => "",
          Volatile => True);
    end Leave;
 
