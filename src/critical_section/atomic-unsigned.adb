@@ -14,11 +14,12 @@ is
       Order : Mem_Order := Seq_Cst)
       return T
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
       Result : T;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
+      Result := Vola;
       Critical_Section.Leave (State);
       return Result;
    end Load;
@@ -32,10 +33,11 @@ is
       Val   : T;
       Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := Instance (Val);
+      Vola := Val;
       Critical_Section.Leave (State);
    end Store;
 
@@ -47,10 +49,11 @@ is
                   Val   : T;
                   Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This + Instance (Val);
+      Vola := Vola + Val;
       Critical_Section.Leave (State);
    end Add;
 
@@ -62,10 +65,11 @@ is
                   Val   : T;
                   Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This - Instance (Val);
+      Vola := Vola - Val;
       Critical_Section.Leave (State);
    end Sub;
 
@@ -77,10 +81,11 @@ is
                      Val   : T;
                      Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This and Instance (Val);
+      Vola := Vola and Val;
       Critical_Section.Leave (State);
    end Op_And;
 
@@ -92,10 +97,11 @@ is
                      Val   : T;
                      Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This xor Instance (Val);
+      Vola := Vola xor Val;
       Critical_Section.Leave (State);
    end Op_XOR;
 
@@ -107,10 +113,11 @@ is
                     Val   : T;
                     Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This or Instance (Val);
+      Vola := Vola or Val;
       Critical_Section.Leave (State);
    end Op_OR;
 
@@ -122,10 +129,11 @@ is
                    Val   : T;
                    Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := not (This and Instance (Val));
+      Vola := not (Vola and Val);
       Critical_Section.Leave (State);
    end NAND;
 
@@ -140,11 +148,12 @@ is
                        Old   : out T;
                        Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Old := T (This);
-      This := Instance (Val);
+      Old := Vola;
+      Vola := Val;
       Critical_Section.Leave (State);
    end Exchange;
 
@@ -160,11 +169,12 @@ is
                                Success_Order : Mem_Order := Seq_Cst;
                                Failure_Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      if T (This) = Expected then
-         This := Instance (Desired);
+      if Vola = Expected then
+         Vola := Desired;
          Success := True;
       else
          Success := False;
@@ -181,11 +191,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This + Instance (Val);
-      Result := T (This);
+      Result := Vola + Val;
+      Vola := Result;
       Critical_Section.Leave (State);
    end Add_Fetch;
 
@@ -198,11 +209,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This - Instance (Val);
-      Result := T (This);
+      Result := Vola - Val;
+      Vola := Result;
       Critical_Section.Leave (State);
    end Sub_Fetch;
 
@@ -215,11 +227,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This and Instance (Val);
-      Result := T (This);
+      Result := Vola and Val;
+      Vola := Result;
       Critical_Section.Leave (State);
    end And_Fetch;
 
@@ -232,11 +245,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This xor Instance (Val);
-      Result := T (This);
+      Result := Vola xor Val;
+      Vola := Result;
       Critical_Section.Leave (State);
    end XOR_Fetch;
 
@@ -249,11 +263,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This or Instance (Val);
-      Result := T (This);
+      Result := Vola or Val;
+      Vola := Result;
       Critical_Section.Leave (State);
    end OR_Fetch;
 
@@ -266,11 +281,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := not (This and Instance (Val));
-      Result := T (This);
+      Result := not (Vola and Val);
+      Vola := Result;
       Critical_Section.Leave (State);
    end NAND_Fetch;
 
@@ -283,11 +299,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
-      This := This + Instance (Val);
+      Result := Vola;
+      Vola := Vola + Val;
       Critical_Section.Leave (State);
    end Fetch_Add;
 
@@ -300,11 +317,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
-      This := This - Instance (Val);
+      Result := Vola;
+      Vola := Vola - Val;
       Critical_Section.Leave (State);
    end Fetch_Sub;
 
@@ -317,11 +335,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
-      This := This and Instance (Val);
+      Result := Vola;
+      Vola := Vola and Val;
       Critical_Section.Leave (State);
    end Fetch_And;
 
@@ -334,11 +353,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
-      This := This xor Instance (Val);
+      Result := Vola;
+      Vola := Vola xor Val;
       Critical_Section.Leave (State);
    end Fetch_XOR;
 
@@ -351,11 +371,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
-      This := This or Instance (Val);
+      Result := Vola;
+      Vola := Vola or Val;
       Critical_Section.Leave (State);
    end Fetch_OR;
 
@@ -368,11 +389,12 @@ is
                          Result : out T;
                          Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
-      This := not (This and Instance (Val));
+      Result := Vola;
+      Vola := not (Vola and Val);
       Critical_Section.Leave (State);
    end Fetch_NAND;
 

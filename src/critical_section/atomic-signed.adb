@@ -15,11 +15,12 @@ is
       Order : Mem_Order := Seq_Cst)
       return T
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
       Result : T;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
+      Result := Vola;
       Critical_Section.Leave (State);
       return Result;
    end Load;
@@ -33,10 +34,11 @@ is
       Val   : T;
       Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := Instance (Val);
+      Vola := Val;
       Critical_Section.Leave (State);
    end Store;
 
@@ -48,10 +50,11 @@ is
                   Val   : T;
                   Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This + Instance (Val);
+      Vola := Vola + Val;
       Critical_Section.Leave (State);
    end Add;
 
@@ -63,10 +66,11 @@ is
                   Val   : T;
                   Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This - Instance (Val);
+      Vola := Vola - Val;
       Critical_Section.Leave (State);
    end Sub;
 
@@ -81,11 +85,12 @@ is
                        Old   : out T;
                        Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Old := T (This);
-      This := Instance (Val);
+      Old := Vola;
+      Vola := Val;
       Critical_Section.Leave (State);
    end Exchange;
 
@@ -101,11 +106,12 @@ is
                                Success_Order : Mem_Order := Seq_Cst;
                                Failure_Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      if T (This) = Expected then
-         This := Instance (Desired);
+      if Vola = Expected then
+         Vola := Desired;
          Success := True;
       else
          Success := False;
@@ -122,11 +128,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This + Instance (Val);
-      Result := T (This);
+      Result := Vola + Val;
+      Vola := Result;
       Critical_Section.Leave (State);
    end Add_Fetch;
 
@@ -139,11 +146,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := This - Instance (Val);
-      Result := T (This);
+      Result := Vola - Val;
+      Vola := Result;
       Critical_Section.Leave (State);
    end Sub_Fetch;
 
@@ -156,11 +164,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
-      This := This + Instance (Val);
+      Result := Vola;
+      Vola := Vola + Val;
       Critical_Section.Leave (State);
    end Fetch_Add;
 
@@ -173,11 +182,12 @@ is
                         Result : out T;
                         Order : Mem_Order := Seq_Cst)
    is
+      Vola  : T with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := T (This);
-      This := This - Instance (Val);
+      Result := Vola;
+      Vola := Vola - Val;
       Critical_Section.Leave (State);
    end Fetch_Sub;
 

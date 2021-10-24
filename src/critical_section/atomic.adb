@@ -28,12 +28,13 @@ package body Atomic is
                  Order : Mem_Order := Seq_Cst)
                  return Boolean
    is
+      Vol : Flag with Volatile, Address => This'Address;
       State : Interrupt_State;
       Result : Boolean;
    begin
 
       Critical_Section.Enter (State);
-      Result := This /= 0;
+      Result := Vol /= 0;
       Critical_Section.Leave (State);
       return Result;
    end Set;
@@ -46,11 +47,12 @@ package body Atomic is
                            Result : out Boolean;
                            Order  : Mem_Order := Seq_Cst)
    is
+      Vol : Flag with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      Result := This /= 0;
-      This := 1;
+      Result := Vol /= 0;
+      Vol := 1;
       Critical_Section.Leave (State);
    end Test_And_Set;
 
@@ -61,10 +63,11 @@ package body Atomic is
    procedure Clear (This : aliased in out Flag;
                     Order : Mem_Order := Seq_Cst)
    is
+      Vol : Flag with Volatile, Address => This'Address;
       State : Interrupt_State;
    begin
       Critical_Section.Enter (State);
-      This := 0;
+      Vol := 0;
       Critical_Section.Leave (State);
    end Clear;
 
