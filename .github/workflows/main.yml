@@ -19,3 +19,4 @@ jobs:
       - run: alr build
       - run: cd tests && alr build
       - run: cd tests && alr run
+      - run: cd tests/armv6m && alr build
