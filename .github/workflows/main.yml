@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build_native:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
@@ -19,5 +19,19 @@ jobs:
       - run: alr build
       - run: cd tests && alr build
       - run: cd tests && alr run
+
+  build_arm_elf:
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
+        gnat_version: [^10, ^11]
+        gprbuild_version: [^21]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: alire-project/setup-alire@v1
+        with:
+          toolchain: gprbuild${{ matrix.gprbuild_version }} gnat_arm_elf${{ matrix.gnat_version }} --disable-assistant
+      - run: alr build
       - run: cd tests/armv6m && alr build
       - run: cd tests/rp2040 && alr build
