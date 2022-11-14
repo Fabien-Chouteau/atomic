@@ -32,6 +32,5 @@ jobs:
       - uses: alire-project/setup-alire@v1
         with:
           toolchain: gprbuild${{ matrix.gprbuild_version }} gnat_arm_elf${{ matrix.gnat_version }} --disable-assistant
-      - run: alr build
       - run: cd tests/armv6m && alr build
       - run: cd tests/rp2040 && alr build
