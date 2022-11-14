@@ -1,0 +1,14 @@
+name = "tests"
+description = "Shiny new project"
+version = "0.0.0"
+
+executables = ["tests"]
+[[depends-on]]
+atomic = "*"
+gnat_arm_elf = "*"
+
+[[pins]]
+atomic = { path='../../../atomic' }
+
+[configuration.values]
+atomic.backend = "rp2040"

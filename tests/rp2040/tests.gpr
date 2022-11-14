@@ -1,34 +1,23 @@
-with "config/atomic_config.gpr";
+with "config/tests_config.gpr";
+project Tests is
 
-project Atomic is
+   for Target use "arm-eabi";
+   for Runtime ("Ada") use "zfp-cortex-m0p";
 
-   for Library_Name use "Atomic";
-   for Library_Version use "0.0.0";
-
-   case Atomic_Config.Backend is
-      when "Intrinsic" =>
-         for Source_Dirs use ("src", "src/intrinsic");
-      when "armv6m" =>
-         for Source_Dirs use ("src", "src/critical_section", "src/armv6m");
-      when "rp2040" =>
-         for Source_Dirs use ("src", "src/critical_section", "src/rp2040");
-   end case;
-
+   for Source_Dirs use ("../src");
    for Object_Dir use "obj";
    for Create_Missing_Dirs use "True";
-   for Library_Dir use "lib";
-
-   type Library_Type_Type is ("relocatable", "static", "static-pic");
-   Library_Type : Library_Type_Type :=
-     external ("ATOMIC_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
-   for Library_Kind use Library_Type;
+   for Exec_Dir use "bin";
+   for Main use ("main.adb");
 
    type Enabled_Kind is ("enabled", "disabled");
-   Compile_Checks : Enabled_Kind := External ("ATOMIC_COMPILE_CHECKS", "disabled");
-   Style_Checks : Enabled_Kind := External ("ATOMIC_STYLE_CHECKS", "disabled");
+   Compile_Checks : Enabled_Kind := External ("TESTS_COMPILE_CHECKS", "disabled");
+   Runtime_Checks : Enabled_Kind := External ("TESTS_RUNTIME_CHECKS", "disabled");
+   Style_Checks : Enabled_Kind := External ("TESTS_STYLE_CHECKS", "disabled");
+   Contracts_Checks : Enabled_Kind := External ("TESTS_CONTRACTS", "disabled");
 
    type Build_Kind is ("debug", "optimize");
-   Build_Mode : Build_Kind := External ("ATOMIC_BUILD_MODE", "optimize");
+   Build_Mode : Build_Kind := External ("TESTS_BUILD_MODE", "optimize");
 
    Compile_Checks_Switches := ();
    case Compile_Checks is
@@ -36,25 +25,36 @@ project Atomic is
          Compile_Checks_Switches :=
            ("-gnatwa",  -- All warnings
             "-gnatVa",  -- All validity checks
-            "-gnatw.X", -- Disable warning may call Last_Chance_Handler
             "-gnatwe"); -- Warnings as errors
       when others => null;
    end case;
 
-   Runtime_Checks_Switches := ("-gnatp"); -- Suppress checks
+   Runtime_Checks_Switches := ();
+   case Runtime_Checks is
+      when "enabled" => null;
+      when others =>
+         Runtime_Checks_Switches :=
+           ("-gnatp"); -- Suppress checks
+   end case;
 
    Style_Checks_Switches := ();
    case Style_Checks is
-      when "enabled" => null;
+      when "enabled" =>
          Style_Checks_Switches :=
            ("-gnatyg",   -- GNAT Style checks
             "-gnaty-d",  -- Disable no DOS line terminators
-            "-gnatyM200", -- Maximum line length
+            "-gnatyM80", -- Maximum line length
             "-gnatyO");  -- Overriding subprograms explicitly marked as such
       when others => null;
    end case;
 
    Contracts_Switches := ();
+   case Contracts_Checks is
+      when "enabled" =>
+         Contracts_Switches :=
+           ("-gnata"); --  Enable assertions and contracts
+      when others => null;
+   end case;
 
    Build_Switches := ();
    case Build_Mode is
@@ -81,4 +81,4 @@ project Atomic is
       for Switches ("Ada") use ("-Es"); --  Symbolic traceback
    end Binder;
 
-end Atomic;
+end Tests;
