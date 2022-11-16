@@ -8,7 +8,7 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        gnat_version: [^10, ^11]
+        gnat_version: [^10, ^11, ^12]
         gprbuild_version: [^21]
     runs-on: ${{ matrix.os }}
     steps:
