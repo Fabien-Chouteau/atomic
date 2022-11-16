@@ -2,7 +2,10 @@ with System.Machine_Code; use System.Machine_Code;
 
 package body Atomic.Critical_Section is
 
-   SPINLOCK31_Address : constant := 16#D000_017C#;
+   SPINLOCK31 : Interfaces.Unsigned_32 with
+     Volatile,
+     Import,
+     Address => System'To_Address (16#D000_017C#);
 
    -----------------------------------
    -- Local Subprogram Declarations --
@@ -21,11 +24,6 @@ package body Atomic.Critical_Section is
    procedure Spinlock_Lock is
       use type Interfaces.Unsigned_32;
 
-      SPINLOCK31 : Interfaces.Unsigned_32 with
-        Volatile,
-        Import,
-        Address => System'To_Address (SPINLOCK31_Address);
-
    begin
       --  Reads attempt to claim the lock.
       --  Read value is nonzero if the lock was successfully claimed,
@@ -41,11 +39,6 @@ package body Atomic.Critical_Section is
 
    procedure Spinlock_Unlock is
       use type Interfaces.Unsigned_32;
-
-      SPINLOCK31 : Interfaces.Unsigned_32 with
-        Volatile,
-        Import,
-        Address => System'To_Address (SPINLOCK31_Address);
 
    begin
       --  Write any value to release the lock
