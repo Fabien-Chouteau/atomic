@@ -10,4 +10,4 @@ website = "https://github.com/Fabien-Chouteau/atomic"
 tags = ["atomic", "spark", "embedded", "nostd"]
 
 [configuration.variables]
-Backend = {type = "Enum",  values = ["Intrinsic", "armv6m", "rp2040"], default = "Intrinsic"}
+Backend = {type = "Enum",  values = ["Intrinsic", "armv6m", "rp2040_spinlock"], default = "Intrinsic"}

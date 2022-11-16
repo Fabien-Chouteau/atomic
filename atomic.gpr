@@ -10,8 +10,8 @@ project Atomic is
          for Source_Dirs use ("src", "src/intrinsic");
       when "armv6m" =>
          for Source_Dirs use ("src", "src/critical_section", "src/armv6m");
-      when "rp2040" =>
-         for Source_Dirs use ("src", "src/critical_section", "src/rp2040");
+      when "rp2040_spinlock" =>
+         for Source_Dirs use ("src", "src/critical_section", "src/rp2040_spinlock");
    end case;
 
    for Object_Dir use "obj";
