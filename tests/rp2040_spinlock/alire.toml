@@ -11,4 +11,4 @@ gnat_arm_elf = "*"
 atomic = { path='../../../atomic' }
 
 [configuration.values]
-atomic.backend = "rp2040"
+atomic.backend = "rp2040_spinlock"
