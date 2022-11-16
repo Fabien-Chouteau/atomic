@@ -8,7 +8,7 @@ atomic = "*"
 gnat_arm_elf = "*"
 
 [[pins]]
-atomic = { path='../../../atomic' }
+atomic = { path='../..' }
 
 [configuration.values]
 atomic.backend = "armv6m"
