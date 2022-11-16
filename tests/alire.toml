@@ -12,4 +12,4 @@ executables = ["main"]
 atomic = "~0.3.0"
 
 [[pins]]
-atomic = { path='../../atomic' }
+atomic = { path='..' }
