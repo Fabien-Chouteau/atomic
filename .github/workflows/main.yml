@@ -31,8 +31,12 @@ jobs:
         with:
           toolchain: gnat_arm_elf${{ matrix.gnat_version }} gprbuild --disable-assistant
 
-      - run: echo "TESTS_RUNTIME=zfp-cortex-m0" >> $GITHUB_ENV
-        if: ${{ matrix.gnat_version != '^12' }}
-
       - run: cd tests/armv6m && alr build --validation
+        if: ${{ matrix.gnat_version == '^12' }}
       - run: cd tests/rp2040_spinlock && alr build --validation
+        if: ${{ matrix.gnat_version == '^12' }}
+
+      - run: cd tests/armv6m && alr build --validation -- -XTESTS_RUNTIME=zfp-cortex-m0
+        if: ${{ matrix.gnat_version != '^12' }}
+      - run: cd tests/rp2040_spinlock && alr build --validation  -- -XTESTS_RUNTIME=zfp-cortex-m0
+        if: ${{ matrix.gnat_version != '^12' }}
