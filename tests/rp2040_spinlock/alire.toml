@@ -12,3 +12,4 @@ atomic = { path='../..' }
 
 [configuration.values]
 atomic.backend = "rp2040_spinlock"
+atomic.RP2040_Spinlock_ID = 21

@@ -1,11 +1,17 @@
+with Atomic_Config;
 with System.Machine_Code; use System.Machine_Code;
 
 package body Atomic.Critical_Section is
 
-   SPINLOCK31 : Interfaces.Unsigned_32 with
+   SPINLOCK_BASE    : constant := 16#D000_0100#;
+
+   SPINLOCK_ADDRESS : constant :=
+     SPINLOCK_BASE + 4 * Atomic_Config.RP2040_Spinlock_ID;
+
+   SPINLOCK : Interfaces.Unsigned_32 with
      Volatile,
      Import,
-     Address => System'To_Address (16#D000_017C#);
+     Address => System'To_Address (SPINLOCK_ADDRESS);
 
    -----------------------------------
    -- Local Subprogram Declarations --
@@ -29,7 +35,7 @@ package body Atomic.Critical_Section is
       --  Read value is nonzero if the lock was successfully claimed,
       --  or zero if the lock had already been claimed by a previous read.
       loop
-         exit when SPINLOCK31 /= 0;
+         exit when SPINLOCK /= 0;
       end loop;
    end Spinlock_Lock;
 
@@ -42,7 +48,7 @@ package body Atomic.Critical_Section is
 
    begin
       --  Write any value to release the lock
-      SPINLOCK31 := 0;
+      SPINLOCK := 0;
    end Spinlock_Unlock;
 
    -----------
