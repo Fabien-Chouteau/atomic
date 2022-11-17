@@ -150,7 +150,8 @@ procedure Main is
       pragma Assert (Load (V) = T'First + 1);
 
       Store (V, T'First);
-      pragma Assert (not Compare_Exchange (V, T'First + 1, T'First + 1, Weak => True));
+      pragma Assert (not Compare_Exchange (V, T'First + 1, T'First + 1,
+                                           Weak => True));
       pragma Assert (Compare_Exchange (V, T'First, T'First + 1, Weak => True));
       pragma Assert (Load (V) = T'First + 1);
 
@@ -287,7 +288,8 @@ procedure Main is
       pragma Assert (Load (V) = T'First + 1);
 
       Store (V, T'First);
-      pragma Assert (not Compare_Exchange (V, T'First + 1, T'First + 1, Weak => True));
+      pragma Assert (not Compare_Exchange (V, T'First + 1, T'First + 1,
+                                           Weak => True));
       pragma Assert (Compare_Exchange (V, T'First, T'First + 1, Weak => True));
       pragma Assert (Load (V) = T'First + 1);
 

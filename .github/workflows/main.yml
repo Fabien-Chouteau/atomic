@@ -9,28 +9,30 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         gnat_version: [^10, ^11, ^12]
-        gprbuild_version: [^21]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: alire-project/setup-alire@v1
         with:
-          toolchain: gprbuild${{ matrix.gprbuild_version }} gnat_native${{ matrix.gnat_version }} --disable-assistant
+          toolchain: gnat_native${{ matrix.gnat_version }} --disable-assistant
       - run: alr build
-      - run: cd tests && alr build
+      - run: cd tests && alr build --validation
       - run: cd tests && alr run
 
   build_arm_elf:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        gnat_version: [^10, ^11]
-        gprbuild_version: [^21]
+        gnat_version: [^10, ^11, ^12]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
       - uses: alire-project/setup-alire@v1
         with:
-          toolchain: gprbuild${{ matrix.gprbuild_version }} gnat_arm_elf${{ matrix.gnat_version }} --disable-assistant
-      - run: cd tests/armv6m && alr build
-      - run: cd tests/rp2040_spinlock && alr build
+          toolchain: gnat_arm_elf${{ matrix.gnat_version }} --disable-assistant
+
+      - run: echo "TESTS_RUNTIME=zfp-coretex-m0" >> $GITHUB_ENV
+        if: ${{ matrix.gnat_version != '12' }}
+
+      - run: cd tests/armv6m && alr build --validation
+      - run: cd tests/rp2040_spinlock && alr build --validation
