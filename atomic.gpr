@@ -1,20 +1,27 @@
 with "config/atomic_config.gpr";
-
 project Atomic is
 
    for Library_Name use "Atomic";
-   for Library_Version use "0.0.0";
+   for Library_Version use Project'Library_Name & ".so." & Atomic_Config.Crate_Version;
 
    case Atomic_Config.Backend is
       when "Intrinsic" =>
-         for Source_Dirs use ("src", "src/intrinsic");
+         for Source_Dirs use ("src",
+                              "config",
+                              "src/intrinsic");
       when "armv6m" =>
-         for Source_Dirs use ("src", "src/critical_section", "src/armv6m");
+         for Source_Dirs use ("src",
+                              "config",
+                              "src/critical_section",
+                              "src/armv6m");
       when "rp2040_spinlock" =>
-         for Source_Dirs use ("src", "src/critical_section", "src/rp2040_spinlock");
+         for Source_Dirs use ("src",
+                              "config",
+                              "src/critical_section",
+                              "src/rp2040_spinlock");
    end case;
 
-   for Object_Dir use "obj";
+   for Object_Dir use "obj/" & Atomic_Config.Build_Profile;
    for Create_Missing_Dirs use "True";
    for Library_Dir use "lib";
 
@@ -23,62 +30,16 @@ project Atomic is
      external ("ATOMIC_LIBRARY_TYPE", external ("LIBRARY_TYPE", "static"));
    for Library_Kind use Library_Type;
 
-   type Enabled_Kind is ("enabled", "disabled");
-   Compile_Checks : Enabled_Kind := External ("ATOMIC_COMPILE_CHECKS", "disabled");
-   Style_Checks : Enabled_Kind := External ("ATOMIC_STYLE_CHECKS", "disabled");
-
-   type Build_Kind is ("debug", "optimize");
-   Build_Mode : Build_Kind := External ("ATOMIC_BUILD_MODE", "optimize");
-
-   Compile_Checks_Switches := ();
-   case Compile_Checks is
-      when "enabled" =>
-         Compile_Checks_Switches :=
-           ("-gnatwa",  -- All warnings
-            "-gnatVa",  -- All validity checks
-            "-gnatw.X", -- Disable warning may call Last_Chance_Handler
-            "-gnatwe"); -- Warnings as errors
-      when others => null;
-   end case;
-
-   Runtime_Checks_Switches := ("-gnatp"); -- Suppress checks
-
-   Style_Checks_Switches := ();
-   case Style_Checks is
-      when "enabled" => null;
-         Style_Checks_Switches :=
-           ("-gnatyg",   -- GNAT Style checks
-            "-gnaty-d",  -- Disable no DOS line terminators
-            "-gnatyM200", -- Maximum line length
-            "-gnatyO");  -- Overriding subprograms explicitly marked as such
-      when others => null;
-   end case;
-
-   Contracts_Switches := ();
-
-   Build_Switches := ();
-   case Build_Mode is
-      when "optimize" =>
-         Build_Switches := ("-O3",     -- Optimization
-                            "-gnatn"); -- Enable inlining
-      when "debug" =>
-         Build_Switches := ("-g",   -- Debug info
-                            "-Og"); -- No optimization
-   end case;
-
    package Compiler is
-      for Default_Switches ("Ada") use
-        Compile_Checks_Switches &
-        Build_Switches &
-        Runtime_Checks_Switches &
-        Style_Checks_Switches &
-        Contracts_Switches &
-        ("-gnatw.X", -- Disable warnings for No_Exception_Propagation
-         "-gnatQ");  -- Don't quit. Generate ALI and tree files even if illegalities
+      for Default_Switches ("Ada") use Atomic_Config.Ada_Compiler_Switches;
    end Compiler;
 
    package Binder is
       for Switches ("Ada") use ("-Es"); --  Symbolic traceback
    end Binder;
+
+   package Install is
+      for Artifacts (".") use ("share");
+   end Install;
 
 end Atomic;
