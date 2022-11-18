@@ -88,6 +88,5 @@ private
    pragma Inline (Set);
    pragma Inline (Test_And_Set);
    pragma Inline (Clear);
-   pragma Inline (Value);
 
 end Atomic;
