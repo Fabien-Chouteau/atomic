@@ -23,7 +23,7 @@ jobs:
 
         # Produce an Alire release manifest
       - name: Make Release Manifest
-        if: (github.event_name == 'release' && startsWith(matrix.os, 'ubuntu'))
+        if: (startsWith(matrix.os, 'ubuntu'))
         run: |
           # Set user GitHub login required for `alr publish`
           alr config --set --global user.github_login ${{github.repository_owner}}
