@@ -3,6 +3,7 @@ pragma Assertion_Policy (Check);
 with Atomic;
 with Atomic.Unsigned;
 with Atomic.Signed;
+with Atomic.Basic_Operations;
 with Ada.Text_IO;
 with Interfaces;
 
@@ -15,6 +16,14 @@ procedure Main is
    generic
       type T is range <>;
    procedure Test_Signed;
+
+   generic
+      type T is range <>;
+   procedure Test_General_Access;
+
+   generic
+      type T is range <>;
+   procedure Test_Pool_Specific_Access;
 
    -------------------
    -- Test_Unsigned --
@@ -316,6 +325,115 @@ procedure Main is
       Ada.Text_IO.Put_Line ("SUCCESS Signed" & T'Object_Size'Img);
    end Test_Signed;
 
+   -------------------------
+   -- Test_General_Access --
+   -------------------------
+
+   procedure Test_General_Access is
+      type T_Access is access all T;
+
+      package GA_Atomic is new Atomic.Basic_Operations (T_Access);
+      use GA_Atomic;
+
+      Obj_1 : aliased T := T'First;
+      Obj_2 : aliased T := T'Last;
+
+      V : aliased Instance := Init (Obj_1'Access);
+      Old : T_Access := Obj_1'Access;
+      Success : Boolean;
+   begin
+
+      pragma Assert (Load (V) = Obj_1'Access);
+      Store (V, Obj_2'Access);
+      pragma Assert (Load (V) = Obj_2'Access);
+
+      Exchange (V, Obj_1'Access, Old);
+      pragma Assert (Load (V) = Obj_1'Access);
+      pragma Assert (Old = Obj_2'Access);
+
+      Compare_Exchange (V,
+                        Expected      => Obj_2'Access,
+                        Desired       => Obj_1'Access,
+                        Weak          => True,
+                        Success       => Success);
+      pragma Assert (not Success);
+
+      Compare_Exchange (V,
+                        Expected      => Obj_1'Access,
+                        Desired       => Obj_2'Access,
+                        Weak          => True,
+                        Success       => Success);
+      pragma Assert (Success);
+      pragma Assert (Load (V) = Obj_2'Access);
+
+      Store (V, Obj_2'Access);
+      pragma Assert (Exchange (V, Obj_1'Access) = Obj_2'Access);
+      pragma Assert (Load (V) = Obj_1'Access);
+
+      Store (V, Obj_2'Access);
+      pragma Assert (not Compare_Exchange (V, Obj_1'Access, Obj_1'Access,
+                                           Weak => True));
+      pragma Assert (Compare_Exchange (V, Obj_2'Access, Obj_1'Access,
+                                       Weak => True));
+      pragma Assert (Load (V) = Obj_1'Access);
+
+      Ada.Text_IO.Put_Line ("SUCCESS General_Access");
+   end Test_General_Access;
+
+   -------------------------------
+   -- Test_Pool_Specific_Access --
+   -------------------------------
+
+   procedure Test_Pool_Specific_Access is
+      type T_Access is access T;
+
+      package PSA_Atomic is new Atomic.Basic_Operations (T_Access);
+      use PSA_Atomic;
+
+      Ptr_1 : constant T_Access := new T'(T'First);
+      Ptr_2 : constant T_Access := new T'(T'Last);
+
+      V : aliased Instance := Init (Ptr_1);
+      Old : T_Access := Ptr_1;
+      Success : Boolean;
+   begin
+
+      pragma Assert (Load (V) = Ptr_1);
+      Store (V, Ptr_2);
+      pragma Assert (Load (V) = Ptr_2);
+
+      Exchange (V, Ptr_1, Old);
+      pragma Assert (Load (V) = Ptr_1);
+      pragma Assert (Old = Ptr_2);
+
+      Compare_Exchange (V,
+                        Expected      => Ptr_2,
+                        Desired       => Ptr_1,
+                        Weak          => True,
+                        Success       => Success);
+      pragma Assert (not Success);
+
+      Compare_Exchange (V,
+                        Expected      => Ptr_1,
+                        Desired       => Ptr_2,
+                        Weak          => True,
+                        Success       => Success);
+      pragma Assert (Success);
+      pragma Assert (Load (V) = Ptr_2);
+
+      Store (V, Ptr_2);
+      pragma Assert (Exchange (V, Ptr_1) = Ptr_2);
+      pragma Assert (Load (V) = Ptr_1);
+
+      Store (V, Ptr_2);
+      pragma Assert (not Compare_Exchange (V, Ptr_1, Ptr_1,
+                                           Weak => True));
+      pragma Assert (Compare_Exchange (V, Ptr_2, Ptr_1, Weak => True));
+      pragma Assert (Load (V) = Ptr_1);
+
+      Ada.Text_IO.Put_Line ("SUCCESS Pool_Specific_Access");
+   end Test_Pool_Specific_Access;
+
    procedure Test_U8 is new Test_Unsigned (Interfaces.Unsigned_8);
    procedure Test_U16 is new Test_Unsigned (Interfaces.Unsigned_16);
    procedure Test_U32 is new Test_Unsigned (Interfaces.Unsigned_32);
@@ -325,6 +443,9 @@ procedure Main is
    procedure Test_S16 is new Test_Signed (Interfaces.Integer_16);
    procedure Test_S32 is new Test_Signed (Interfaces.Integer_32);
    procedure Test_S64 is new Test_Signed (Interfaces.Integer_64);
+
+   procedure Test_General_Ptr is new Test_General_Access (Integer);
+   procedure Test_Pool_Specific_Ptr is new Test_Pool_Specific_Access (Integer);
 
 begin
 
@@ -337,5 +458,8 @@ begin
    Test_S16;
    Test_S32;
    Test_S64;
+
+   Test_General_Ptr;
+   Test_Pool_Specific_Ptr;
 
 end Main;
