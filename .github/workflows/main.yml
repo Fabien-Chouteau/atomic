@@ -10,17 +10,29 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        gnat_version: [^10, ^11, ^12]
+        gnat_version: [^10, ^11, ^12, ^13, ^14, ^15]
         exclude:
+          # GNAT versions 10 and 11 don't work on ubuntu-latest as they don't
+          # understand the more recent RELR sections in the system libc
           - os: ubuntu-latest
             gnat_version: ^10
           - os: ubuntu-latest
             gnat_version: ^11
+          # GNAT native builds for aarch64 macos were introduced since GNAT FSF 13
+          - os: macos-latest
+            gnat_version: ^10
+          - os: macos-latest
+            gnat_version: ^11
+          - os: macos-latest
+            gnat_version: ^12
+          - os: macos-latest
+            gnat_version: ^13
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: alire-project/setup-alire@v1
+      - uses: alire-project/setup-alire@v4
         with:
+          version: 2.1.0
           toolchain: gnat_native${{ matrix.gnat_version }} gprbuild --disable-assistant
       - run: alr build
       - run: cd tests && alr build --validation
@@ -28,13 +40,13 @@ jobs:
 
         # Produce an Alire release manifest
       - name: Make Release Manifest
-        if: (startsWith(matrix.os, 'ubuntu'))
+        if: (github.event_name == 'release' && startsWith(matrix.os, 'ubuntu'))
         run: |
           # Set user GitHub login required for `alr publish`
           alr config --set --global user.github_login ${{github.repository_owner}}
 
           # Run Alire publish assistant
-          alr publish ${{github.server_url}}/${{github.repository}} ${{github.sha}}
+          alr publish ${{github.server_url}}/${{github.repository}} ${{github.sha}} --skip-submit
 
         # Save the path to the release manifest for the next step.
         # This is a little trick to get around the fact that the actions/upload-release-asset doesn't allow globing pattern.
@@ -62,20 +74,31 @@ jobs:
     strategy:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
-        gnat_version: [^10, ^11, ^12]
+        gnat_version: [^10, ^11, ^12, ^13, ^14, ^15]
+        exclude:
+          # GNAT arm_elf builds for aarch64 macos were introduced since GNAT FSF 14
+          - os: macos-latest
+            gnat_version: ^10
+          - os: macos-latest
+            gnat_version: ^11
+          - os: macos-latest
+            gnat_version: ^12
+          - os: macos-latest
+            gnat_version: ^13
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
-      - uses: alire-project/setup-alire@v1
+      - uses: alire-project/setup-alire@v4
         with:
+          version: 2.1.0
           toolchain: gnat_arm_elf${{ matrix.gnat_version }} gprbuild --disable-assistant
 
       - run: cd tests/armv6m && alr build --validation
-        if: ${{ matrix.gnat_version == '^12' }}
+        if: ${{ !startsWith(matrix.gnat_version, '^10') && !startsWith(matrix.gnat_version, '^11') }}
       - run: cd tests/rp2040_spinlock && alr build --validation
-        if: ${{ matrix.gnat_version == '^12' }}
+        if: ${{ !startsWith(matrix.gnat_version, '^10') && !startsWith(matrix.gnat_version, '^11') }}
 
       - run: cd tests/armv6m && alr build --validation -- -XTESTS_RUNTIME=zfp-cortex-m0
-        if: ${{ matrix.gnat_version != '^12' }}
+        if: ${{ startsWith(matrix.gnat_version, '^10') || startsWith(matrix.gnat_version, '^11') }}
       - run: cd tests/rp2040_spinlock && alr build --validation  -- -XTESTS_RUNTIME=zfp-cortex-m0
-        if: ${{ matrix.gnat_version != '^12' }}
+        if: ${{ startsWith(matrix.gnat_version, '^10') || startsWith(matrix.gnat_version, '^11') }}
