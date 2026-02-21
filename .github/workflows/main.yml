@@ -11,6 +11,11 @@ jobs:
       matrix:
         os: [macos-latest, windows-latest, ubuntu-latest]
         gnat_version: [^10, ^11, ^12]
+        exclude:
+          - os: ubuntu-latest
+            gnat_version: ^10
+          - os: ubuntu-latest
+            gnat_version: ^11
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v2
