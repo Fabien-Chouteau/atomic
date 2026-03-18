@@ -52,7 +52,7 @@ jobs:
         if: (github.event_name == 'release' && startsWith(matrix.os, 'ubuntu'))
         uses: actions/upload-artifact@v4
         with:
-          name: release-manifest
+          name: release-manifest-${{ matrix.os }}-${{ matrix.gnat_version }}
           path: alire/releases/*.toml
           
   build_arm_elf:
